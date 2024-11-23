@@ -43,8 +43,12 @@ def plot_temperatures(df, prefix):
                             y=0.99,
                             xanchor="left",
                             x=0.01),
-                    margin=dict(l=mar, r=mar, t=mar, b=mar), 
+                    # margin=dict(l=mar, r=mar, t=mar, b=mar), 
+                    
+
+
                     )
+    fig.update_yaxes(automargin='left+top')
 
     return fig
 
@@ -223,6 +227,7 @@ def render_plots(day_dropdown):
             html.H4('Hot water temperatures'),
             dcc.Graph(
                 figure=plot_temperatures(df, prefix='Tw'),
+                responsive=True, style={'flexGrow':'1', 'flexShrink':'1'}
                 # config={'displayModeBar': False},
                 # style={'width': '150', 'height': '20'},
             ),  
