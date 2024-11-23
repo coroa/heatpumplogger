@@ -81,8 +81,9 @@ def plot_heat_power(df):
                             y=0.99,
                             xanchor="left",
                             x=0.01),
-                    margin=dict(l=mar, r=mar, t=mar, b=mar),
+                    # margin=dict(l=mar, r=mar, t=mar, b=mar),
                     )
+    fig.update_yaxes(automargin='left+top')
     return fig
 
 def plot_defrost(df):
@@ -111,8 +112,9 @@ def plot_defrost(df):
                             y=0.99,
                             xanchor="left",
                             x=0.01),
-                      margin=dict(l=mar, r=mar, t=mar, b=mar),
+                      # margin=dict(l=mar, r=mar, t=mar, b=mar),
                       )
+    fig.update_yaxes(automargin='left+top')
     return fig
 
 def plot_energies(df):
@@ -170,8 +172,9 @@ def plot_energies(df):
                             y=0.99,
                             xanchor="left",
                             x=0.01),
-                      margin=dict(l=mar, r=mar, t=mar, b=mar),
+                      # margin=dict(l=mar, r=mar, t=mar, b=mar),
                       )
+    fig.update_yaxes(automargin='left+top')
     # fig.update_traces(marker=dict(size=24,
     #                           line=dict(width=2,
     #                                     color='DarkSlateGrey')),
@@ -223,14 +226,16 @@ def render_plots(day_dropdown):
                                          ),
                 
                 # config={'displayModeBar': False},
-                style={'height': '90vh'},
+                style={'height': '50vh'},
             ),    
             html.H4('Hot water temperatures'),
             dcc.Graph(
                 figure=plot_temperatures(df, prefix='Tw'),
-                responsive=True, style={'flexGrow':'1', 'flexShrink':'1'}
+                responsive=True, style={'flexGrow':'1', 
+                                        'flexShrink':'1',
+                                        'height': '50vh'},
                 # config={'displayModeBar': False},
-                # style={'width': '150', 'height': '20'},
+
             ),  
             html.H4('Ambient temperature'),
             dcc.Graph(
@@ -238,19 +243,19 @@ def render_plots(day_dropdown):
                                          prefix='Ta'
                                          ),
                 # config={'displayModeBar': False},
-                # style={'width': '150', 'height': '20'},
+                style={'height': '50vh'},
             ),   
             html.H4('Defreezing share'),
             dcc.Graph(
                 figure=plot_defrost(df),
                 # config={'displayModeBar': False},
-                # style={'width': '150', 'height': '20'},
+                #style={'height': '50vh'},
             ),   
             html.H4('Energy input/output'),
             dcc.Graph(
                 figure=plot_energies(df),
                 # config={'displayModeBar': False},
-                # style={'width': '150', 'height': '20'},
+                style={'height': '50vh'},
             ),   
             
         ]
