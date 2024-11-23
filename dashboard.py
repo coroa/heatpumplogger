@@ -193,6 +193,7 @@ def render_plots(day_dropdown):
     
     tt = time.time()
     df.index = pd.DatetimeIndex(df.index)
+    df = df.resample('1min').first()
     print(f"Data processed in {time.time()-tt}s")
     
     # graphs = list()
