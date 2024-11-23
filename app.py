@@ -129,7 +129,7 @@ def update_loop(ip, port):
             time.sleep(15)
 
 def main(ip="192.168.2.254", port=8214):
-    
+    os.makedirs('data', exist_ok=True)
     while True: #always restart after error
     
         try:
