@@ -181,11 +181,16 @@ def render_plots(day_dropdown):
             'log_' + day_dropdown + '.csv'
     )
     print(filepath)
+    tt = time.time()
     df = pd.read_csv(
             filepath,
             index_col=0,
         )
+    print(f"File loaded in {time.time()-tt}s")
+    
+    tt = time.time()
     df.index = pd.DatetimeIndex(df.index)
+    print(f"Data processed in {time.time()-tt}s")
     
     # graphs = list()
 
@@ -284,7 +289,7 @@ def construct_layout():
                           }
                    ),
             dbc.Col([
-                    html.Div("Content"),
+                    #html.Div("Content"),
                     # graphs,
                     html.Div(id="graph_content"),
                     # dcc.Graph(id = 'Other'),
