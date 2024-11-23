@@ -195,7 +195,7 @@ def render_plots(day_dropdown):
     # return graphs
     return html.Div(
         children=[
-            html.H2('Electrictiy Input'),
+            html.H2('Electriticy Input'),
             dcc.Graph(
                 figure=plot_heat_power(df)),
             html.H2('Heating temperatures'),
@@ -212,7 +212,7 @@ def render_plots(day_dropdown):
                 # config={'displayModeBar': False},
                 # style={'width': '150', 'height': '20'},
             ),  
-            html.H2('Ambinet temperature'),
+            html.H2('Ambient temperature'),
             dcc.Graph(
                 figure=plot_temperatures(df, 
                                          prefix='Ta'
@@ -244,7 +244,7 @@ def graphs():
 
 def sidebar_content():
     days = [f.name[4:-4] for f in os.scandir(datapath)]
-    
+    days = sorted(days)
     content = html.Div(  # smaller now moved up beside the first block
         children = [html.Div("Sidebar:"),
         dcc.Dropdown(
@@ -254,6 +254,7 @@ def sidebar_content():
         )
         ]
     )
+    
     return content
     
 #%% Layout    

@@ -135,9 +135,8 @@ def main(ip="192.168.2.254", port=8214):
         try:
             update_loop(ip, port)
         except Exception:
+            print(f'Warning: Update loop failed at {pd.Timestamp.now()}')
             print(traceback.format_exc())
-
-        # section_items.find_all("item")
 
 
 if __name__ == "__main__":
