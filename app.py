@@ -75,8 +75,10 @@ def update_loop(ip, port):
         now = pd.Timestamp.now()
         filename = f'data/log_{now.strftime("%y-%m-%d")}.csv'
         if os.path.exists(filename):
+            tt = time.time()
+            print('Loading from disk..', end='')
             df = pd.read_csv(filename, index_col=0)
-            
+            print(f'.done in {time.time()-tt:2.2f}s')
             old_day = now.strftime('%d')
             
             missing_cols = set([x[0] for x in variable_mapping.values()]).difference(df.columns)
@@ -122,11 +124,13 @@ def update_loop(ip, port):
                         df.loc[now_str,variable_mapping[var][0]] = float(value.replace(variable_mapping[var][1],''))
             
             if i_save ==10:
-                print('saving to disk')
+                tt = time.time()
+                print('saving to disk..', end='')
                 i_save = 0
                 filename = f'data/log_{now.strftime("%y-%m-%d")}.csv'
                 df.to_csv(filename)
-            time.sleep(15)
+                print(f'.done in {time.time()-tt:2.2f}s')
+            time.sleep(60)
 
 def main(ip="192.168.2.254", port=8214):
     os.makedirs('data', exist_ok=True)

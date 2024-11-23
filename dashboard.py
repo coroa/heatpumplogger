@@ -51,8 +51,11 @@ def plot_heat_power(df):
 
     line_style = dict(color='green', dash='dot', width=2)
 
-
-    for colname in ['Heizleistung Ist']:
+    colors = ['Green', 'Blue']
+    
+    df['Leistung Heizen'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='Heizen',0)
+    df['Leistung Warmwasser'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='WW',0)
+    for colname in ['Leistung Heizen','Leistung Warmwasser']:
         # print(hist_data.loc[:, colname])
         fig.add_trace(
             go.Scatter(
@@ -200,10 +203,10 @@ def render_plots(day_dropdown):
     # return graphs
     return html.Div(
         children=[
-            html.H2('Electriticy Input'),
+            html.H4('Electriticy Input'),
             dcc.Graph(
                 figure=plot_heat_power(df)),
-            html.H2('Heating temperatures'),
+            html.H4('Heating temperatures'),
             dcc.Graph(
                 figure=plot_temperatures(df, 
                                          prefix='Th'
@@ -211,13 +214,13 @@ def render_plots(day_dropdown):
                 # config={'displayModeBar': False},
                 # style={'width': '150', 'height': '20'},
             ),    
-            html.H2('Hot water temperatures'),
+            html.H4('Hot water temperatures'),
             dcc.Graph(
                 figure=plot_temperatures(df, prefix='Tw'),
                 # config={'displayModeBar': False},
                 # style={'width': '150', 'height': '20'},
             ),  
-            html.H2('Ambient temperature'),
+            html.H4('Ambient temperature'),
             dcc.Graph(
                 figure=plot_temperatures(df, 
                                          prefix='Ta'
@@ -225,13 +228,13 @@ def render_plots(day_dropdown):
                 # config={'displayModeBar': False},
                 # style={'width': '150', 'height': '20'},
             ),   
-            html.H2('Defreezing share'),
+            html.H4('Defreezing share'),
             dcc.Graph(
                 figure=plot_defrost(df),
                 # config={'displayModeBar': False},
                 # style={'width': '150', 'height': '20'},
             ),   
-            html.H2('Energy input/output'),
+            html.H4('Energy input/output'),
             dcc.Graph(
                 figure=plot_energies(df),
                 # config={'displayModeBar': False},
