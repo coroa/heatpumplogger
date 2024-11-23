@@ -221,8 +221,9 @@ def render_plots(day_dropdown):
                 figure=plot_temperatures(df, 
                                          prefix='Th'
                                          ),
+                
                 # config={'displayModeBar': False},
-                # style={'width': '150', 'height': '20'},
+                style={'height': '90vh'},
             ),    
             html.H4('Hot water temperatures'),
             dcc.Graph(
