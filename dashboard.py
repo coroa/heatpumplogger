@@ -14,6 +14,7 @@ import dash_bootstrap_components as dbc
 from plotly.subplots import make_subplots
 #%%
 datapath = 'data'
+mar = 10 #margin
 #%% plot functions
 
 def plot_temperatures(df, prefix):
@@ -41,8 +42,9 @@ def plot_temperatures(df, prefix):
                             yanchor="top",
                             y=0.99,
                             xanchor="left",
-                            x=0.01
-                    ))
+                            x=0.01),
+                    margin=dict(l=mar, r=mar, t=mar, b=mar), 
+                    )
 
     return fig
 
@@ -74,8 +76,9 @@ def plot_heat_power(df):
                             yanchor="top",
                             y=0.99,
                             xanchor="left",
-                            x=0.01
-                    ))
+                            x=0.01),
+                    margin=dict(l=mar, r=mar, t=mar, b=mar),
+                    )
     return fig
 
 def plot_defrost(df):
@@ -103,8 +106,9 @@ def plot_defrost(df):
                             yanchor="top",
                             y=0.99,
                             xanchor="left",
-                            x=0.01
-                    ))
+                            x=0.01),
+                      margin=dict(l=mar, r=mar, t=mar, b=mar),
+                      )
     return fig
 
 def plot_energies(df):
@@ -161,8 +165,9 @@ def plot_energies(df):
                             yanchor="top",
                             y=0.99,
                             xanchor="left",
-                            x=0.01
-                    ))
+                            x=0.01),
+                      margin=dict(l=mar, r=mar, t=mar, b=mar),
+                      )
     # fig.update_traces(marker=dict(size=24,
     #                           line=dict(width=2,
     #                                     color='DarkSlateGrey')),
