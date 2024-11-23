@@ -6,6 +6,9 @@ from websockets.sync.client import ClientConnection, connect
 import pandas as pd
 import numpy as np
 #%% config
+n_save =1
+log_sleep = 60
+
 non_numeric_var = ['Anlagenstatus/Betriebszustand']
 variable_mapping = { 
     "Temperaturen/Warmwasser-Ist" : ('Tw Warmasser-Ist', '°C'),
@@ -123,14 +126,14 @@ def update_loop(ip, port):
                     else:
                         df.loc[now_str,variable_mapping[var][0]] = float(value.replace(variable_mapping[var][1],''))
             
-            if i_save ==10:
+            if i_save ==n_save:
                 tt = time.time()
                 print('saving to disk..', end='')
                 i_save = 0
                 filename = f'data/log_{now.strftime("%y-%m-%d")}.csv'
                 df.to_csv(filename)
                 print(f'.done in {time.time()-tt:2.2f}s')
-            time.sleep(60)
+            time.sleep(log_sleep)
 
 def main(ip="192.168.2.254", port=8214):
     os.makedirs('data', exist_ok=True)
