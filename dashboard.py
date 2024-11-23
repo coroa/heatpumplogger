@@ -43,7 +43,7 @@ def plot_temperatures(df, prefix):
                             y=0.99,
                             xanchor="left",
                             x=0.01),
-                    # margin=dict(l=mar, r=mar, t=mar, b=mar), 
+                    margin=dict(l=mar, r=mar, t=mar, b=mar), 
                     
 
 
@@ -81,7 +81,7 @@ def plot_heat_power(df):
                             y=0.99,
                             xanchor="left",
                             x=0.01),
-                    # margin=dict(l=mar, r=mar, t=mar, b=mar),
+                    margin=dict(l=mar, r=mar, t=mar, b=mar),
                     )
     fig.update_yaxes(automargin='left+top')
     return fig
@@ -112,7 +112,7 @@ def plot_defrost(df):
                             y=0.99,
                             xanchor="left",
                             x=0.01),
-                      # margin=dict(l=mar, r=mar, t=mar, b=mar),
+                      margin=dict(l=mar, r=mar, t=mar, b=mar),
                       )
     fig.update_yaxes(automargin='left+top')
     return fig
@@ -172,7 +172,7 @@ def plot_energies(df):
                             y=0.99,
                             xanchor="left",
                             x=0.01),
-                      # margin=dict(l=mar, r=mar, t=mar, b=mar),
+                      margin=dict(l=mar, r=mar, t=mar, b=mar),
                       )
     fig.update_yaxes(automargin='left+top')
     # fig.update_traces(marker=dict(size=24,
