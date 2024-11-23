@@ -315,6 +315,7 @@ def dash_server():
     app.run(
         debug=False,
         port=8887,
+        host='0.0.0.0',
     )
 
 
