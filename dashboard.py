@@ -231,9 +231,7 @@ def render_plots(day_dropdown):
             html.H4('Hot water temperatures'),
             dcc.Graph(
                 figure=plot_temperatures(df, prefix='Tw'),
-                responsive=True, style={'flexGrow':'1', 
-                                        'flexShrink':'1',
-                                        'height': '50vh'},
+                style={'height': '50vh'},
                 # config={'displayModeBar': False},
 
             ),  
