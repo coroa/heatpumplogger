@@ -97,9 +97,10 @@ def update_loop(ip, port):
         
         
         while True:
+            tt_start = time.time()
             i_save +=1
             now = pd.Timestamp.now()
-            now_str = now.strftime('%H:%M:%S')
+            now_str = now.strftime('%H:%M:%S') #ToDo .round('min')
             day = now.strftime('%d')
             
             data = update(ws, id_map)
@@ -133,7 +134,9 @@ def update_loop(ip, port):
                 filename = f'data/log_{now.strftime("%y-%m-%d")}.csv'
                 df.to_csv(filename)
                 print(f'.done in {time.time()-tt:2.2f}s')
-            time.sleep(log_sleep)
+                
+            t_calc = time.time()-tt_start
+            time.sleep(log_sleep -t_calc)
 
 def main(ip="192.168.2.254", port=8214):
     os.makedirs('data', exist_ok=True)
