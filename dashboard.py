@@ -123,12 +123,16 @@ def plot_energies(df):
 
     line_style = dict(color='green', dash='dot', width=2)
 
-    data_df = df[['Eingesetzte Energie_Heizung', 'Wärmemenge_Heizung']].resample('60min').first().diff()
+    data_df = df[['Eingesetzte Energie_Heizung', 'Wärmemenge_Heizung',
+                  'Wärmemenge_Warmwasser', 'Eingesetzte Energie_Warmwasser']].resample('60min').first().diff()
     
-    data_df['COP'] = data_df['Wärmemenge_Heizung'] / data_df['Eingesetzte Energie_Heizung']
+    data_df['COP_Heizung'] = data_df['Wärmemenge_Heizung'] / data_df['Eingesetzte Energie_Heizung']
+    data_df['COP_Warmwasser'] = data_df['Wärmemenge_Warmwasser'] / data_df['Eingesetzte Energie_Warmwasser']
     
-
-    for colname in ['Eingesetzte Energie_Heizung', 'Wärmemenge_Heizung']:
+    
+    for i, colname in enumerate(
+            ['Eingesetzte Energie_Heizung', 'Wärmemenge_Heizung']
+            ):
         # print(hist_data.loc[:, colname])
         fig.add_trace(
             go.Bar(
@@ -138,11 +142,35 @@ def plot_energies(df):
                 # line=dict(
                 #     color=cpf.config.variable_meta.loc[colname, 'plot_color'], width=1
                 # ),
+                offsetgroup=i,
                 hovertemplate=' %{y:2.2f}kW',
                 name=colname,
             )
         )
-    for colname in ['COP']:
+    for i,(colname,color) in enumerate(zip(
+            [ 'Wärmemenge_Warmwasser', 'Eingesetzte Energie_Warmwasser'],
+            ['maroon', 'darkblue']
+            )):
+        # print(hist_data.loc[:, colname])
+        fig.add_trace(
+            go.Bar(
+                x=data_df.index,
+                y=data_df.loc[:, colname],
+                marker = dict(color=color),
+                # line_color=cpf.config.variable_meta.loc[colname, 'plot_color'],
+                # line=dict(
+                #     color=cpf.config.variable_meta.loc[colname, 'plot_color'], width=1
+                # ),
+                offsetgroup=i,
+                hovertemplate=' %{y:2.2f}kW',
+                name=colname,
+            )
+        )
+    colors= {
+        'COP_Heizung' :'Green',
+        'COP_Warmwasser' :'darkgreen',
+        }
+    for colname in ['COP_Heizung', 'COP_Warmwasser']:
         # print(hist_data.loc[:, colname])
         fig.add_trace(
             go.Scatter(
@@ -154,7 +182,7 @@ def plot_energies(df):
                 # ),
                 mode='markers',
                 marker=dict(
-                    color='Green',
+                    color=colors[colname],
                     size=20,
                     line=dict(
                         color='Yellow',
