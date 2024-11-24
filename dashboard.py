@@ -143,12 +143,12 @@ def plot_energies(df):
                 #     color=cpf.config.variable_meta.loc[colname, 'plot_color'], width=1
                 # ),
                 offsetgroup=i,
-                hovertemplate=' %{y:2.2f}kW',
+                hovertemplate=' %{y:2.2f} kWh',
                 name=colname,
             )
         )
     for i,(colname,color) in enumerate(zip(
-            [ 'Wärmemenge_Warmwasser', 'Eingesetzte Energie_Warmwasser'],
+            ['Eingesetzte Energie_Warmwasser', 'Wärmemenge_Warmwasser'],
             ['maroon', 'darkblue']
             )):
         # print(hist_data.loc[:, colname])
@@ -162,7 +162,7 @@ def plot_energies(df):
                 #     color=cpf.config.variable_meta.loc[colname, 'plot_color'], width=1
                 # ),
                 offsetgroup=i,
-                hovertemplate=' %{y:2.2f}kW',
+                hovertemplate=' %{y:2.2f} kWh',
                 name=colname,
             )
         )
@@ -189,7 +189,7 @@ def plot_energies(df):
                         width=2
                     )
                 ),
-                hovertemplate=' %{y:2.2f}X',
+                hovertemplate=' %{y:2.2f} X',
                 name=colname,
             ),
             secondary_y=True,
@@ -307,7 +307,18 @@ def sidebar_content():
     )
     
     return content
-    
+
+
+@callback(
+    Output('day_dropdown', 'options'),
+    Input('interval-component', 'n_intervals'),
+    prevent_initial_call=True
+)
+def update(val):
+    days = [f.name[4:-4] for f in os.scandir(datapath)]
+    days = sorted(days)
+    print('Updating options')
+    return days
 #%% Layout    
 def construct_layout():
     # shared_data = Shared_data('DEU')
@@ -341,7 +352,12 @@ def construct_layout():
                     # dcc.Graph(id = 'Other'),
                     
                 ])
-        ])
+        ]),
+        dcc.Interval(
+            id='interval-component',
+            interval=60*1000,
+            n_intervals=0
+        ),
         ]
     )
     
