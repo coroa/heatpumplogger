@@ -119,12 +119,12 @@ def update_loop(ip, port):
             
             for section, param, value in data:
                 var = f"{section}/{param}"
-                print(f"{var} = {value}")
+                # print(f"{var} = {value}")
                 # continue
                 # sdf
                 
                 if var in variable_mapping.keys():
-                    print(f"{var} = {value}")
+                    # print(f"{var} = {value}")
                     
                     if var in non_numeric_var :
                         df.loc[now_str,variable_mapping[var][0]] = value.replace(variable_mapping[var][1],'')
