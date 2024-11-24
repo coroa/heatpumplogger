@@ -19,6 +19,10 @@ variable_mapping = {
     'Temperaturen/Rückl.-Soll' : ('Th Rücklauf-Soll', '°C'),
     "Temperaturen/Mischkreis1-Vorlauf" :("Th Mischkreis1-Vorlau-Ist", "°C" ),
     "Temperaturen/Mischkreis1 VL-Soll" :("Th Mischkreis1-VL-Soll", "°C" ),
+    "Temperaturen/VD-Heizung" : ("Th VD-Heizung" , '°C'),
+    "Temperaturen/Ansaug VD" : ("Temperaturen/Ansaug VD", "°C"),
+    "Wärmequelle-Ein" : ("Wärmequelle-Ein", "°C"),
+    
     "Anlagenstatus/Betriebszustand" : ("Betriebszustand", ''),
     'Anlagenstatus/Heizleistung Ist' : ('Heizleistung Ist', 'kW'),
     'Anlagenstatus/Abtaubedarf' : ('Abtaubedarf', '%'),
@@ -29,6 +33,7 @@ variable_mapping = {
     "Eingesetzte Energie/Heizung" :  ("Eingesetzte Energie_Heizung", "kWh"),
     "Eingesetzte Energie/Warmwasser" :  ("Eingesetzte Energie_Warmwasser", "kWh"),
     # "Eingesetzte Energie/Gesamt" =:  ("kWh"),
+    "Durchfluss" : ("Durchfluss", "l/h")
     }
 
 
@@ -114,7 +119,7 @@ def update_loop(ip, port):
             
             for section, param, value in data:
                 var = f"{section}/{param}"
-                # print(f"{var} = {value}")
+                print(f"{var} = {value}")
                 # continue
                 # sdf
                 
