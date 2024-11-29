@@ -8,6 +8,7 @@ Created on Fri Nov 22 09:02:57 2024
 import os
 import time
 import pandas as pd
+import numpy as np
 from dash import Dash, dcc, html, Input, Output, callback
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
@@ -86,6 +87,37 @@ def plot_heat_power(df):
     fig.update_yaxes(automargin='left+top')
     return fig
 
+def plot_flow(df):
+    fig = go.Figure()
+
+    line_style = dict(color='green', dash='dot', width=2)
+
+
+    for colname in ['Durchfluss']:
+        # print(hist_data.loc[:, colname])
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df.loc[:, colname],
+                # line_color=cpf.config.variable_meta.loc[colname, 'plot_color'],
+                # line=dict(
+                #     color=cpf.config.variable_meta.loc[colname, 'plot_color'], width=1
+                # ),
+                hovertemplate=' %{y:2.2f}%',
+                name=colname,
+            )
+        )
+    fig.update_layout(hovermode="x unified",
+                      legend=dict(
+                            yanchor="top",
+                            y=0.99,
+                            xanchor="left",
+                            x=0.01),
+                      margin=dict(l=mar, r=mar, t=mar, b=mar),
+                      )
+    fig.update_yaxes(automargin='left+top')
+    return fig
+
 def plot_defrost(df):
     fig = go.Figure()
 
@@ -117,19 +149,13 @@ def plot_defrost(df):
     fig.update_yaxes(automargin='left+top')
     return fig
 
-def plot_energies(df):
+def plot_energies(data_df):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
 
     line_style = dict(color='green', dash='dot', width=2)
 
-    data_df = df[['Eingesetzte Energie_Heizung', 'Wärmemenge_Heizung',
-                  'Wärmemenge_Warmwasser', 'Eingesetzte Energie_Warmwasser']].resample('60min').first().diff()
-    
-    data_df['COP_Heizung'] = data_df['Wärmemenge_Heizung'] / data_df['Eingesetzte Energie_Heizung']
-    data_df['COP_Warmwasser'] = data_df['Wärmemenge_Warmwasser'] / data_df['Eingesetzte Energie_Warmwasser']
-    
-    
+
     for i, colname in enumerate(
             ['Eingesetzte Energie_Heizung', 'Wärmemenge_Heizung']
             ):
@@ -210,14 +236,31 @@ def plot_energies(df):
     return fig
 
 #%% Content
+
+# @callback(
+#     output=Output('sidebar_content', 'children'),
+#     inputs=[
+
+#         Input('day_dropdown', 'value'),
+#     ],
+# )
+# def update_sidebar(day_dropdown):
+#     html.Div(
+#         children=[
+            
+#             ]
+    
 @callback(
-    output=Output('graph_content', 'children'),
+    output=[
+        Output('graph_content', 'children'),
+        Output('sidebar_content', 'children')
+        ],
     inputs=[
 
         Input('day_dropdown', 'value'),
     ],
 )
-def render_plots(day_dropdown):
+def update_content(day_dropdown):
     # load data
     filepath = os.path.join(
             datapath,
@@ -236,13 +279,17 @@ def render_plots(day_dropdown):
     # df = df.resample('1min').first()
     print(f"Data processed in {time.time()-tt}s")
     
-    # graphs = list()
+    data_df = df[['Eingesetzte Energie_Heizung', 'Wärmemenge_Heizung',
+                  'Wärmemenge_Warmwasser', 'Eingesetzte Energie_Warmwasser']].resample('60min').first().diff()
+    
+    data_df['COP_Heizung'] = data_df['Wärmemenge_Heizung'] / data_df['Eingesetzte Energie_Heizung']
+    data_df['COP_Warmwasser'] = data_df['Wärmemenge_Warmwasser'] / data_df['Eingesetzte Energie_Warmwasser']
+    
+    
 
     # graphs.append(
         
-    
-    # return graphs
-    return html.Div(
+    graph_content = html.Div(
         children=[
             html.H4('Electriticy Input'),
             dcc.Graph(
@@ -263,6 +310,13 @@ def render_plots(day_dropdown):
                 # config={'displayModeBar': False},
 
             ),  
+            # html.H4('Water flow'),
+            # dcc.Graph(
+            #     figure=plot_flow(df),
+            #     style={'height': '50vh'},
+            #     # config={'displayModeBar': False},
+
+            # ),  
             html.H4('Ambient temperature'),
             dcc.Graph(
                 figure=plot_temperatures(df, 
@@ -279,7 +333,7 @@ def render_plots(day_dropdown):
             ),   
             html.H4('Energy input/output'),
             dcc.Graph(
-                figure=plot_energies(df),
+                figure=plot_energies(data_df),
                 # config={'displayModeBar': False},
                 style={'height': '50vh'},
             ),   
@@ -288,6 +342,27 @@ def render_plots(day_dropdown):
         
         
     )
+    
+    sample_values =pd.Series(df.index).diff().dt.total_seconds().fillna(0).cumsum().values
+    
+    # day_heat_output = np.trapezoid( df['Heizleistung Ist'],sample_values)/3600
+    total_heat_output = data_df['Wärmemenge_Warmwasser'].sum() + data_df['Wärmemenge_Heizung'].sum()
+    total_heating_output = data_df['Wärmemenge_Heizung'].sum()
+    total_hotwater_output = data_df['Wärmemenge_Warmwasser'].sum() 
+    
+    hours_running = (~df['Betriebszustand'].isna()).sum()/60
+    sidebar_content = html.Div(
+            children=[
+                html.B('Overview:'),
+                html.P(f'Total output: {total_heat_output:2.2f} kWh'),
+                html.P(f'Total heating: {total_heating_output:2.2f} kWh'),
+                html.P(f'Total hotwater: {total_hotwater_output:2.2f} kWh'),
+                html.P(f'Time heating: {hours_running:2.2f} h'),
+                ]
+            )
+    
+    # return graphs
+    return graph_content, sidebar_content
 
 
 def graphs():
@@ -297,12 +372,13 @@ def sidebar_content():
     days = [f.name[4:-4] for f in os.scandir(datapath)]
     days = sorted(days)
     content = html.Div(  # smaller now moved up beside the first block
-        children = [html.Div("Sidebar:"),
-        dcc.Dropdown(
-            days,
-            days[-1],
-            id='day_dropdown',
-        )
+        children = [
+            dcc.Dropdown(
+                days,
+                days[-1],
+                id='day_dropdown',
+            ),
+            html.Div(id="sidebar_content"),
         ]
     )
     
@@ -321,6 +397,7 @@ def update(val):
     return days
 #%% Layout    
 def construct_layout():
+    print('constructing layout')
     # shared_data = Shared_data('DEU')
     # versions = shared_data.get_old_commits()
     # layout = html.Div(
@@ -374,7 +451,7 @@ def dash_server():
     # server = app.server
 
     # shared_data = Shared_data('DEU')
-    app.layout = construct_layout()
+    app.layout = construct_layout
     
 
     print(f'Dashboard init took {time.time()-tt:2.2f}s')
