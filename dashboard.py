@@ -343,7 +343,7 @@ def update_content(day_dropdown):
         
     )
     
-    sample_values =pd.Series(df.index).diff().dt.total_seconds().fillna(0).cumsum().values
+    #sample_values =pd.Series(df.index).diff().dt.total_seconds().fillna(0).cumsum().values
     
     # day_heat_output = np.trapezoid( df['Heizleistung Ist'],sample_values)/3600
     total_heat_output = data_df['Wärmemenge_Warmwasser'].sum() + data_df['Wärmemenge_Heizung'].sum()
@@ -361,7 +361,7 @@ def update_content(day_dropdown):
     sidebar_content = html.Div(
             children=[
                 
-                html.B('Overiew :'),
+                html.B('Overview :'),
                 html.P(f'Time heating: {hours_running:2.2f} h'),
                 html.P(f'COP: {overall_COP:2.2f}'),
                 
@@ -370,7 +370,7 @@ def update_content(day_dropdown):
                 html.P(f'Total heating: {total_heating_output:2.2f} kWh'),
                 html.P(f'Total hotwater: {total_hotwater_output:2.2f} kWh'),
                 
-                html.B('Electic heat input :'),
+                html.B('Electric heat input :'),
                 html.P(f'Total input: {total_heat_input:2.2f} kWh'),
                 html.P(f'Total heating: {total_heating_input:2.2f} kWh'),
                 html.P(f'Total hotwater: {total_hotwater_input:2.2f} kWh'),
