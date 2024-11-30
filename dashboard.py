@@ -350,14 +350,31 @@ def update_content(day_dropdown):
     total_heating_output = data_df['Wärmemenge_Heizung'].sum()
     total_hotwater_output = data_df['Wärmemenge_Warmwasser'].sum() 
     
+    total_heat_input = data_df['Eingesetzte Energie_Warmwasser'].sum() + data_df['Eingesetzte Energie_Heizung'].sum()
+    total_heating_input = data_df['Eingesetzte Energie_Heizung'].sum()
+    total_hotwater_input = data_df['Wärmemenge_Warmwasser'].sum() 
+    
+    overall_COP = total_heat_output / total_heat_input
+    
+    
     hours_running = (~df['Betriebszustand'].isna()).sum()/60
     sidebar_content = html.Div(
             children=[
-                html.B('Overview:'),
+                
+                html.B('Overiew :'),
+                html.P(f'Time heating: {hours_running:2.2f} h'),
+                html.P(f'COP: {overall_COP:2.2f}'),
+                
+                html.B('Thermal heat output :'),
                 html.P(f'Total output: {total_heat_output:2.2f} kWh'),
                 html.P(f'Total heating: {total_heating_output:2.2f} kWh'),
                 html.P(f'Total hotwater: {total_hotwater_output:2.2f} kWh'),
-                html.P(f'Time heating: {hours_running:2.2f} h'),
+                
+                html.B('Electic heat input :'),
+                html.P(f'Total input: {total_heat_input:2.2f} kWh'),
+                html.P(f'Total heating: {total_heating_input:2.2f} kWh'),
+                html.P(f'Total hotwater: {total_hotwater_input:2.2f} kWh'),
+              
                 ]
             )
     
@@ -444,6 +461,7 @@ def construct_layout():
 def dash_server():
     tt = time.time()
     print('Starting dash application:')
+
     app = Dash(
         __name__,
         external_stylesheets=[dbc.themes.BOOTSTRAP],
