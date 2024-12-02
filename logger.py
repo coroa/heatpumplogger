@@ -130,7 +130,11 @@ def update_loop(ip, port):
 
                         value = value.replace(unit, "")
                         if var not in non_numeric_var:
-                            value = float(value)
+                            
+                            try:
+                                value = float(value)
+                            except:
+                                value = ''    
                         row[field] = value
 
                 writer.writerow(row)
