@@ -6,7 +6,7 @@ from csv import DictWriter
 import pandas as pd
 from bs4 import BeautifulSoup
 from websockets.sync.client import ClientConnection, connect
-
+from collections import OrderedDict
 # %% config
 log_interval = 60
 
@@ -35,6 +35,16 @@ variable_mapping = {
     "Eingänge/Durchfluss": ("Durchfluss", "l/h"),
 }
 
+status_mapping = {
+    "Anlagenstatus/Betriebszustand" : {'' : 0, 'Heizen': 1, 'WW': 1},
+    "Eingänge/STB E-Stab" : {'Aus' : 0, 'Ein' : 1},
+    "Ausgänge/HUP": {'Aus' : 0, 'Ein' : 1},
+    "Ausgänge/BUP": {'Aus' : 0, 'Ein' : 1},
+    "Ausgänge/Verdichter": {'Aus' : 0, 'Ein' : 1},
+    "Ausgänge/VD-Heizung": {'Aus' : 0, 'Ein' : 1}
+    }
+    
+status_vars = list(status_mapping.keys())
 
 # %%
 def call(ws: ClientConnection, cmd) -> BeautifulSoup:
@@ -92,18 +102,24 @@ def update_existing_file(fieldnames: list[str]) -> str:
     return date_str
 
 
-def update_loop(ip, port):
+def update_loop(ip, port, debug=False):
     with connect(f"ws://{ip}:{port}/", subprotocols=["Lux_WS"]) as ws:
         menu = call(ws, "LOGIN;999999")
         menu_id = menu.find(string="Informationen").parent.parent.attrs["id"]
 
         id_map = select(ws, menu_id)
-        fieldnames = ["time"] + [field for field, unit in variable_mapping.values()]
+        fieldnames = (
+            ["time"] + 
+            [field for field, unit in variable_mapping.values()] +
+            ["status"] 
+            )
+        
 
         old_date_str = update_existing_file(fieldnames)
 
         # wait until next full interval before first sync
-        time.sleep(log_interval - (time.localtime().tm_sec % log_interval))
+        if not debug:
+            time.sleep(log_interval - (time.localtime().tm_sec % log_interval))
 
         # update data
         while True:
@@ -122,12 +138,14 @@ def update_loop(ip, port):
                     old_date_str = date_str
 
                 row = dict(time=now_str)
+                
+                state = 0
                 for section, param, value in data:
                     var = f"{section}/{param}"
-
+                    print(f"{section}/{param}")
                     if var in variable_mapping:
                         field, unit = variable_mapping[var]
-
+                        
                         value = value.replace(unit, "")
                         if var not in non_numeric_var:
                             
@@ -136,6 +154,14 @@ def update_loop(ip, port):
                             except:
                                 value = ''    
                         row[field] = value
+                        
+                    if var in status_mapping.keys():
+                        exp = status_vars.index(var)
+                        state_part = status_mapping[var][value]
+                        state += state_part * (10**exp)
+                        
+                code = str(state).zfill(len(status_vars))
+                row['status'] = code
 
                 writer.writerow(row)
 
@@ -190,5 +216,6 @@ def main(ip="192.168.2.254", port=8214):
 
 
 if __name__ == "__main__":
-    main()
+    # main()
     # print_current_state(ip="192.168.2.254", port=8214)
+    update_loop(ip="192.168.2.254", port=8214, debug =True)
