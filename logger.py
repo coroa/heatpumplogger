@@ -32,7 +32,7 @@ variable_mapping = {
     "Eingesetzte Energie/Heizung": ("Eingesetzte Energie_Heizung", "kWh"),
     "Eingesetzte Energie/Warmwasser": ("Eingesetzte Energie_Warmwasser", "kWh"),
     # "Eingesetzte Energie/Gesamt" =:  ("kWh"),
-    "Durchfluss": ("Durchfluss", "l/h"),
+    "Eingänge/Durchfluss": ("Durchfluss", "l/h"),
 }
 
 
@@ -140,6 +140,40 @@ def update_loop(ip, port):
             t_calc = time.time() - now
             time.sleep(log_interval - t_calc)
 
+def print_current_state(ip, port):
+    with connect(f"ws://{ip}:{port}/", subprotocols=["Lux_WS"]) as ws:
+        menu = call(ws, "LOGIN;999999")
+        menu_id = menu.find(string="Informationen").parent.parent.attrs["id"]
+
+        id_map = select(ws, menu_id)
+        fieldnames = ["time"] + [field for field, unit in variable_mapping.values()]
+
+        # old_date_str = update_existing_file(fieldnames)
+
+        # wait until next full interval before first sync
+        # time.sleep(log_interval - (time.localtime().tm_sec % log_interval))
+
+        # update data
+        # while True:
+        now = time.time()
+        now_str = time.strftime("%H:%M:%S", time.localtime(now))
+        date_str = time.strftime("%y-%m-%d", time.localtime(now))
+
+        data = update(ws, id_map)
+        print(f"update of data in {time.time()-now:2.2f}s")
+        # filename = f"data/log_{date_str}.csv"
+        # with open(filename, mode="a") as f:
+            # writer = DictWriter(f, fieldnames)
+            # if date_str != old_date_str:
+            #     # new file was started we need to output the header
+            #     writer.writeheader()
+            #     old_date_str = date_str
+
+        row = dict(time=now_str)
+        for section, param, value in data:
+            var = f"{section}/{param}"
+            print(f"{section}/{param}", value)
+
 
 def main(ip="192.168.2.254", port=8214):
     os.makedirs("data", exist_ok=True)
@@ -153,3 +187,4 @@ def main(ip="192.168.2.254", port=8214):
 
 if __name__ == "__main__":
     main()
+    # print_current_state(ip="192.168.2.254", port=8214)
