@@ -142,7 +142,7 @@ def update_loop(ip, port, debug=False):
                 state = 0
                 for section, param, value in data:
                     var = f"{section}/{param}"
-                    print(f"{section}/{param}")
+                    # print(f"{section}/{param}")
                     if var in variable_mapping:
                         field, unit = variable_mapping[var]
                         
