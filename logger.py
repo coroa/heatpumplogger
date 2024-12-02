@@ -112,7 +112,7 @@ def update_loop(ip, port):
             date_str = time.strftime("%y-%m-%d", time.localtime(now))
 
             data = update(ws, id_map)
-
+            print(f"update of data in {time.time()-now:2.2f}s")
             filename = f"data/log_{date_str}.csv"
             with open(filename, mode="a") as f:
                 writer = DictWriter(f, fieldnames)
