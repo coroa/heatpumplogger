@@ -36,7 +36,7 @@ variable_mapping = {
 }
 
 status_mapping = {
-    "Anlagenstatus/Betriebszustand" : {'' : 0, 'Heizen': 1, 'WW': 1},
+    "Anlagenstatus/Betriebszustand" : {'' : 0, 'Heizen': 1, 'WW': 1, 'ABT':2},
     "Eingänge/STB E-Stab" : {'Aus' : 0, 'Ein' : 1},
     "Ausgänge/HUP": {'Aus' : 0, 'Ein' : 1},
     "Ausgänge/BUP": {'Aus' : 0, 'Ein' : 1},
@@ -157,6 +157,8 @@ def update_loop(ip, port, debug=False):
                         
                     if var in status_mapping.keys():
                         exp = status_vars.index(var)
+                        if value not in status_mapping[var].keys():
+                            print(f"{var, value} not found")
                         state_part = status_mapping[var][value]
                         state += state_part * (10**exp)
                         
