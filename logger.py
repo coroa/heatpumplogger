@@ -217,7 +217,7 @@ def main(ip="192.168.2.254", port=8214, debug=False):
         except Exception:
             print(f"Warning: Update loop failed at {pd.Timestamp.now()}")
             print(traceback.format_exc())
-
+            time.sleep(30)
 
 if __name__ == "__main__":
     main(debug=True)
