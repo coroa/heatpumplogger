@@ -127,51 +127,47 @@ def update_loop(ip, port, debug=False):
             now_str = time.strftime("%H:%M:%S", time.localtime(now))
             date_str = time.strftime("%y-%m-%d", time.localtime(now))
             
-            try:
-                data = update(ws, id_map)
-                print(f"update of data in {time.time()-now:2.2f}s")
-                filename = f"data/log_{date_str}.csv"
-                with open(filename, mode="a") as f:
-                    writer = DictWriter(f, fieldnames)
-                    if date_str != old_date_str:
-                        # new file was started we need to output the header
-                        writer.writeheader()
-                        old_date_str = date_str
-    
-                    row = dict(time=now_str)
-                    
-                    state = 0
-                    for section, param, value in data:
-                        var = f"{section}/{param}"
-                        # print(f"{section}/{param}")
-                        if var in variable_mapping:
-                            field, unit = variable_mapping[var]
+            # try:
+            data = update(ws, id_map)
+            print(f"update of data in {time.time()-now:2.2f}s")
+            filename = f"data/log_{date_str}.csv"
+            with open(filename, mode="a") as f:
+                writer = DictWriter(f, fieldnames)
+                if date_str != old_date_str:
+                    # new file was started we need to output the header
+                    writer.writeheader()
+                    old_date_str = date_str
+
+                row = dict(time=now_str)
+                
+                state = 0
+                for section, param, value in data:
+                    var = f"{section}/{param}"
+                    # print(f"{section}/{param}")
+                    if var in variable_mapping:
+                        field, unit = variable_mapping[var]
+                        
+                        value = value.replace(unit, "")
+                        if var not in non_numeric_var:
                             
-                            value = value.replace(unit, "")
-                            if var not in non_numeric_var:
-                                
-                                try:
-                                    value = float(value)
-                                except:
-                                    value = ''    
-                            row[field] = value
-                            
-                        if var in status_mapping.keys():
-                            exp = status_vars.index(var)
-                            if value not in status_mapping[var].keys():
-                                print(f"{var, value} not found")
-                            state_part = status_mapping[var][value]
-                            state += state_part * (10**exp)
-                            
-                    code = str(state).zfill(len(status_vars))
-                    row['status'] = code
-    
-                    writer.writerow(row)
-                    print(f".done in {time.time()-now:2.2f}s")
-            except :
-                import traceback
-                print(f".failed after {time.time()-now:2.2f}s")
-                print(traceback.format_exc())
+                            try:
+                                value = float(value)
+                            except:
+                                value = ''    
+                        row[field] = value
+                        
+                    if var in status_mapping.keys():
+                        exp = status_vars.index(var)
+                        if value not in status_mapping[var].keys():
+                            print(f"{var, value} not found")
+                        state_part = status_mapping[var][value]
+                        state += state_part * (10**exp)
+                        
+                code = str(state).zfill(len(status_vars))
+                row['status'] = code
+
+                writer.writerow(row)
+                print(f".done in {time.time()-now:2.2f}s")
 
             
 
@@ -213,7 +209,7 @@ def print_current_state(ip, port):
             print(f"{section}/{param}", value)
 
 
-def main(ip="192.168.2.254", port=8214):
+def main(ip="192.168.2.254", port=8214, debug=False):
     os.makedirs("data", exist_ok=True)
     while True:  # always restart after error
         try:
@@ -224,6 +220,6 @@ def main(ip="192.168.2.254", port=8214):
 
 
 if __name__ == "__main__":
-    # main()
+    main(debug=True)
     # print_current_state(ip="192.168.2.254", port=8214)
-    update_loop(ip="192.168.2.254", port=8214, debug =True)
+    # update_loop(ip="192.168.2.254", port=8214, debug =True)
