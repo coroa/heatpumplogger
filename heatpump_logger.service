@@ -1,0 +1,10 @@
+[Unit]
+Description=LCD Renewable share agent
+After=multi-user.target
+  
+[Service]
+ExecStart=/home/and/python/heatpumplogger/start_logger.sh                              
+WorkingDirectory=/home/and/python/heatpumplogger
+User=and
+[Install]
+WantedBy=multi-user.target
