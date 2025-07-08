@@ -5,17 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = "==3.12.4"
 dependencies = [
-    "beautifulsoup4>=4.12.3",
     "websockets>=14.1",
     "dash",
     "dash-bootstrap-components>=1.6.0",
     "pandas>=2.2.3",
+    "jq>=1.9.1",
 ]
 
 [dependency-groups]
-dev = [
-    "ipykernel>=6.29.5",
-    "pytest>=8.3.3",
-    "dash",
-    "spyder==6.0.2",
-]
+dev = ["ipykernel>=6.29.5", "pytest>=8.3.3", "dash", "spyder==6.0.2"]

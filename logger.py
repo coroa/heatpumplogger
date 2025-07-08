@@ -3,10 +3,10 @@ import time
 import traceback
 from csv import DictWriter
 
+import jq
 import pandas as pd
-from bs4 import BeautifulSoup
 from websockets.sync.client import ClientConnection, connect
-from collections import OrderedDict
+
 # %% config
 log_interval = 60
 
@@ -22,64 +22,65 @@ variable_mapping = {
     "Temperaturen/Mischkreis1 VL-Soll": ("Th Mischkreis1-VL-Soll", "°C"),
     "Temperaturen/VD-Heizung": ("Th VD-Heizung", "°C"),
     "Temperaturen/Ansaug VD": ("Temperaturen/Ansaug VD", "°C"),
-    "Wärmequelle-Ein": ("Wärmequelle-Ein", "°C"),
+    "Temperaturen/Wärmequelle-Ein": ("Wärmequelle-Ein", "°C"),
     "Anlagenstatus/Betriebszustand": ("Betriebszustand", ""),
     "Anlagenstatus/Heizleistung Ist": ("Heizleistung Ist", "kW"),
     "Anlagenstatus/Abtaubedarf": ("Abtaubedarf", "%"),
-    "Wärmemenge/Heizung": ("Wärmemenge_Heizung", "kWh"),
-    "Wärmemenge/Warmwasser": ("Wärmemenge_Warmwasser", "kWh"),
+    "Energiemonitor/Wärmemenge/Heizung": ("Wärmemenge_Heizung", "kWh"),
+    "Energiemonitor/Wärmemenge/Warmwasser": ("Wärmemenge_Warmwasser", "kWh"),
     # "Wärmemenge/Gesamt" :  ("kWh"),
-    "Eingesetzte Energie/Heizung": ("Eingesetzte Energie_Heizung", "kWh"),
-    "Eingesetzte Energie/Warmwasser": ("Eingesetzte Energie_Warmwasser", "kWh"),
+    "Energiemonitor/Leistungsaufnahme/Heizung": ("Eingesetzte Energie_Heizung", "kWh"),
+    "Energiemonitor/Leistungsaufnahme/Warmwasser": (
+        "Eingesetzte Energie_Warmwasser",
+        "kWh",
+    ),
     # "Eingesetzte Energie/Gesamt" =:  ("kWh"),
     "Eingänge/Durchfluss": ("Durchfluss", "l/h"),
 }
 
 status_mapping = {
-    "Anlagenstatus/Betriebszustand" : {'' : 0, 'Heizen': 1, 'WW': 1, 'ABT':2},
-    "Eingänge/STB E-Stab" : {'Aus' : 0, 'Ein' : 1},
-    "Ausgänge/HUP": {'Aus' : 0, 'Ein' : 1},
-    "Ausgänge/BUP": {'Aus' : 0, 'Ein' : 1},
-    "Ausgänge/Verdichter": {'Aus' : 0, 'Ein' : 1},
-    "Ausgänge/VD-Heizung": {'Aus' : 0, 'Ein' : 1}
-    }
-    
+    "Anlagenstatus/Betriebszustand": {"": 0, "Heizen": 1, "WW": 1, "ABT": 2},
+    "Eingänge/STB E-Stab": {"Aus": 0, "Ein": 1},
+    "Ausgänge/HUP": {"Aus": 0, "Ein": 1},
+    "Ausgänge/BUP": {"Aus": 0, "Ein": 1},
+    "Ausgänge/Verdichter": {"Aus": 0, "Ein": 1},
+    "Ausgänge/VD-Heizung": {"Aus": 0, "Ein": 1},
+}
+
 status_vars = list(status_mapping.keys())
 
+
 # %%
-def call(ws: ClientConnection, cmd) -> BeautifulSoup:
+def call(ws: ClientConnection, cmd) -> str:
     ws.send(cmd)
-    return BeautifulSoup(ws.recv(timeout=10), "html.parser")
+    return ws.recv(timeout=10)
 
 
 def select(ws: ClientConnection, id: str) -> dict[str, tuple]:
     id_map = {}
     info_items = call(ws, f"GET;{id}")
-    section_items = info_items.find(name="content").find_all("item", recursive=True)
-    for section_it in section_items[:-1]:
-        # print(section_it)
-        section = section_it.find("name").text
-        id_map.update(
-            {
-                it["id"]: (section, it.find("name").text)
-                for it in section_it.find_all("item")
-            }
-        )
+    values = jq.all(
+        """
+            def flatten($path):
+                if has("items") then
+                    .items[] | flatten($path + "/" + .name)
+                else
+                    {name: $path, id}
+                end;
+
+            .items[] | flatten(.name)
+        """,
+        text=info_items,
+    )
+    id_map = {v["id"]: v["name"] for v in values}
 
     return id_map
 
 
 def update(ws: ClientConnection, id_map) -> list[tuple]:
     data = []
-    for it in call(ws, "REFRESH").find_all("item"):
-        if it["id"] not in id_map:
-            # skip sections
-            continue
-        section, param = id_map[it["id"]]
-        value_it = it.find("value", recursive=False)
-        if value_it:
-            value = value_it.text
-            data.append((section, param, value))
+    for it in jq.all('.. | select(try has("value"))', text=call(ws, "REFRESH")):
+        data.append((id_map[it["id"]], it["value"]))
     return data
 
 
@@ -97,7 +98,7 @@ def update_existing_file(fieldnames: list[str]) -> str:
     changed_columns = fieldnames[1:] != list(df.columns)
     if changed_columns:
         df.reindex(columns=fieldnames[1:]).to_csv(filename)
-    print(f".done in {time.time()-tt:2.2f}s")
+    print(f".done in {time.time() - tt:2.2f}s")
 
     return date_str
 
@@ -105,15 +106,14 @@ def update_existing_file(fieldnames: list[str]) -> str:
 def update_loop(ip, port, debug=False):
     with connect(f"ws://{ip}:{port}/", subprotocols=["Lux_WS"]) as ws:
         menu = call(ws, "LOGIN;999999")
-        menu_id = menu.find(string="Informationen").parent.parent.attrs["id"]
+        menu_id = jq.first(
+            '.items[] | select(.name == "Informationen") | .id', text=menu
+        )
 
         id_map = select(ws, menu_id)
         fieldnames = (
-            ["time"] + 
-            [field for field, unit in variable_mapping.values()] +
-            ["status"] 
-            )
-        
+            ["time"] + [field for field, unit in variable_mapping.values()] + ["status"]
+        )
 
         old_date_str = update_existing_file(fieldnames)
 
@@ -126,10 +126,9 @@ def update_loop(ip, port, debug=False):
             now = time.time()
             now_str = time.strftime("%H:%M:%S", time.localtime(now))
             date_str = time.strftime("%y-%m-%d", time.localtime(now))
-            
-            # try:
+
             data = update(ws, id_map)
-            print(f"update of data in {time.time()-now:2.2f}s")
+            print(f"update of data in {time.time() - now:2.2f}s")
             filename = f"data/log_{date_str}.csv"
             with open(filename, mode="a") as f:
                 writer = DictWriter(f, fieldnames)
@@ -139,74 +138,36 @@ def update_loop(ip, port, debug=False):
                     old_date_str = date_str
 
                 row = dict(time=now_str)
-                
+
                 state = 0
-                for section, param, value in data:
-                    var = f"{section}/{param}"
-                    # print(f"{section}/{param}")
+
+                for var, value in data:
                     if var in variable_mapping:
                         field, unit = variable_mapping[var]
-                        
+
                         value = value.replace(unit, "")
                         if var not in non_numeric_var:
-                            
                             try:
                                 value = float(value)
-                            except:
-                                value = ''    
+                            except ValueError:
+                                value = ""
                         row[field] = value
-                        
-                    if var in status_mapping.keys():
+
+                    if var in status_mapping:
                         exp = status_vars.index(var)
                         if value not in status_mapping[var].keys():
                             print(f"{var, value} not found")
                         state_part = status_mapping[var][value]
                         state += state_part * (10**exp)
-                        
+
                 code = str(state).zfill(len(status_vars))
-                row['status'] = code
+                row["status"] = code
 
                 writer.writerow(row)
-                print(f".done in {time.time()-now:2.2f}s")
-
-            
+                print(f".done in {time.time() - now:2.2f}s")
 
             t_calc = time.time() - now
             time.sleep(log_interval - t_calc)
-
-def print_current_state(ip, port):
-    with connect(f"ws://{ip}:{port}/", subprotocols=["Lux_WS"]) as ws:
-        menu = call(ws, "LOGIN;999999")
-        menu_id = menu.find(string="Informationen").parent.parent.attrs["id"]
-
-        id_map = select(ws, menu_id)
-        fieldnames = ["time"] + [field for field, unit in variable_mapping.values()]
-
-        # old_date_str = update_existing_file(fieldnames)
-
-        # wait until next full interval before first sync
-        # time.sleep(log_interval - (time.localtime().tm_sec % log_interval))
-
-        # update data
-        # while True:
-        now = time.time()
-        now_str = time.strftime("%H:%M:%S", time.localtime(now))
-        date_str = time.strftime("%y-%m-%d", time.localtime(now))
-
-        data = update(ws, id_map)
-        print(f"update of data in {time.time()-now:2.2f}s")
-        # filename = f"data/log_{date_str}.csv"
-        # with open(filename, mode="a") as f:
-            # writer = DictWriter(f, fieldnames)
-            # if date_str != old_date_str:
-            #     # new file was started we need to output the header
-            #     writer.writeheader()
-            #     old_date_str = date_str
-
-        row = dict(time=now_str)
-        for section, param, value in data:
-            var = f"{section}/{param}"
-            print(f"{section}/{param}", value)
 
 
 def main(ip="192.168.2.254", port=8214, debug=False):
@@ -218,6 +179,7 @@ def main(ip="192.168.2.254", port=8214, debug=False):
             print(f"Warning: Update loop failed at {pd.Timestamp.now()}")
             print(traceback.format_exc())
             time.sleep(30)
+
 
 if __name__ == "__main__":
     main(debug=True)

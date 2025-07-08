@@ -291,7 +291,7 @@ def update_content(day_dropdown):
         
     graph_content = html.Div(
         children=[
-            html.H4('Electriticy Input'),
+            html.H4('Electricity Input'),
             dcc.Graph(
                 figure=plot_heat_power(df)),
             html.H4('Heating temperatures'),
