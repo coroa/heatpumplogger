@@ -275,7 +275,13 @@ def update_content(day_dropdown):
     print(f"File loaded in {time.time()-tt}s")
     
     tt = time.time()
-    df.index = pd.DatetimeIndex(df.index)
+    
+    today = pd.Timestamp.now().floor('d')
+    data_date = pd.to_datetime(day_dropdown,format="%y-%m-%d")
+    
+    delta_time = today-data_date
+    
+    df.index = pd.DatetimeIndex(df.index) - delta_time
     # df = df.resample('1min').first()
     print(f"Data processed in {time.time()-tt}s")
     
