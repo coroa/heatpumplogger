@@ -1,6 +1,9 @@
 import os
 import time
 import traceback
+import requests
+import json
+    
 from csv import DictWriter
 
 import jq
@@ -51,6 +54,17 @@ status_vars = list(status_mapping.keys())
 
 
 # %%
+
+def post_api_outside_temperature(temperature,
+                                 url = 'http://0.0.0.0:5000/message',
+                                 ):
+
+
+    assert type(temperature) == float
+    data = { "message": f"{temperature:2.1f}°C"}
+    response = requests.post(url, data=str(json.dumps(data)),headers={"Content-Type": "application/json"})
+    print(response)
+    
 def call(ws: ClientConnection, cmd) -> str:
     ws.send(cmd)
     return ws.recv(timeout=10)
@@ -120,9 +134,12 @@ def update_loop(ip, port, debug=False):
         # wait until next full interval before first sync
         if not debug:
             time.sleep(log_interval - (time.localtime().tm_sec % log_interval))
-
+        
+        i=0
         # update data
         while True:
+            
+            
             now = time.time()
             now_str = time.strftime("%H:%M:%S", time.localtime(now))
             date_str = time.strftime("%y-%m-%d", time.localtime(now))
@@ -166,6 +183,13 @@ def update_loop(ip, port, debug=False):
                 writer.writerow(row)
                 print(f".done in {time.time() - now:2.2f}s")
 
+            if i%10 ==0:
+                try:
+                    post_api_outside_temperature(row["Ta Außentemperatur"])
+                    print('API post for outside temperature')
+                except:
+                    pass
+            i +=1
             t_calc = time.time() - now
             time.sleep(log_interval - t_calc)
 

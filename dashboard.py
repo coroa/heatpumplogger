@@ -297,7 +297,7 @@ def update_content(day_dropdown):
         
     graph_content = html.Div(
         children=[
-            html.H4('Electricity Input'),
+            html.H4('Heat Output'),
             dcc.Graph(
                 figure=plot_heat_power(df)),
             html.H4('Heating temperatures'),
@@ -376,7 +376,7 @@ def update_content(day_dropdown):
                 html.P(f'Total heating: {total_heating_output:2.2f} kWh'),
                 html.P(f'Total hotwater: {total_hotwater_output:2.2f} kWh'),
                 
-                html.B('Electric heat input :'),
+                html.B('Electric input :'),
                 html.P(f'Total input: {total_heat_input:2.2f} kWh'),
                 html.P(f'Total heating: {total_heating_input:2.2f} kWh'),
                 html.P(f'Total hotwater: {total_hotwater_input:2.2f} kWh'),
