@@ -61,7 +61,7 @@ def post_api_outside_temperature(temperature,
 
 
     assert type(temperature) == float
-    data = { "message": f"{temperature:2.1f}°C"}
+    data = { "display_1": f"{temperature:2.1f}C"}
     response = requests.post(url, data=str(json.dumps(data)),headers={"Content-Type": "application/json"})
     print(response)
     
