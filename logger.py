@@ -188,7 +188,7 @@ def update_loop(ip, port, debug=False):
                     post_api_outside_temperature(row["Ta Außentemperatur"])
                     print('API post for outside temperature')
                 except:
-                    pass
+                    print('Failed API post for outside temperature')
             i +=1
             t_calc = time.time() - now
             time.sleep(log_interval - t_calc)
