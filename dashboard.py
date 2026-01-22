@@ -62,7 +62,8 @@ def plot_heat_power(df):
     
     df['Leistung Heizen'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='Heizen',0)
     df['Leistung Warmwasser'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='WW',0)
-    for colname in ['Leistung Heizen','Leistung Warmwasser']:
+    df['Leistung Abtauen'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='ABT',0)
+    for colname in ['Leistung Heizen','Leistung Warmwasser', 'Leistung Abtauen']:
         # print(hist_data.loc[:, colname])
         fig.add_trace(
             go.Scatter(
