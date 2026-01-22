@@ -28,6 +28,7 @@ variable_mapping = {
     "Temperaturen/Wärmequelle-Ein": ("Wärmequelle-Ein", "°C"),
     "Anlagenstatus/Betriebszustand": ("Betriebszustand", ""),
     "Anlagenstatus/Heizleistung Ist": ("Heizleistung Ist", "kW"),
+    "Anlagenstatus/Leistungsaufnahme": ("Leistungsaufnahme", "kW"),
     "Anlagenstatus/Abtaubedarf": ("Abtaubedarf", "%"),
     "Energiemonitor/Wärmemenge/Heizung": ("Wärmemenge_Heizung", "kWh"),
     "Energiemonitor/Wärmemenge/Warmwasser": ("Wärmemenge_Warmwasser", "kWh"),

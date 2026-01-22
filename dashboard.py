@@ -56,27 +56,33 @@ def plot_temperatures(df, prefix):
 def plot_heat_power(df):
     fig = go.Figure()
 
-    line_style = dict(color='green', dash='dot', width=2)
+    #line_style = dict(color='green', dash='dot', width=2)
 
-    colors = ['Green', 'Blue']
+    colors = {'Leistung Heizen': 'Blue', 
+              'Leistung Warmwasser' : 'Green', 
+              'Leistung Abtauen' : 'Red',
+              'Leistungsaufnahme' : 'Gray'}
     
     df['Leistung Heizen'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='Heizen',0)
     df['Leistung Warmwasser'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='WW',0)
-    df['Leistung Abtauen'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='ABT',0)
-    for colname in ['Leistung Heizen','Leistung Warmwasser', 'Leistung Abtauen']:
+    # df['Leistungsaufnahme'] = df['Leistungsaufnahme'].where(df['Betriebszustand']=='ABT',0)
+    for colname in ['Leistung Heizen','Leistung Warmwasser', 'Leistung Abtauen', 'Leistungsaufnahme']:
         # print(hist_data.loc[:, colname])
-        fig.add_trace(
-            go.Scatter(
-                x=df.index,
-                y=df.loc[:, colname],
-                # line_color=cpf.config.variable_meta.loc[colname, 'plot_color'],
-                # line=dict(
-                #     color=cpf.config.variable_meta.loc[colname, 'plot_color'], width=1
-                # ),
-                hovertemplate=' %{y:2.2f}kW',
-                name=colname,
+        
+        if colname in df.columns:
+            fig.add_trace(
+                go.Scatter(
+                    x=df.index,
+                    y=df.loc[:, colname],
+                    # line_color=cpf.config.variable_meta.loc[colname, 'plot_color'],
+                    line=dict(
+                        color=colors[colname], width=1
+                    ),
+                    fill='tozeroy',
+                    hovertemplate=' %{y:2.2f}kW',
+                    name=colname,
+                )
             )
-        )
     fig.update_layout(hovermode="x unified",
                       legend=dict(
                             yanchor="top",
