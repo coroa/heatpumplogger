@@ -61,7 +61,7 @@ def plot_heat_power(df):
     colors = {'Leistung Heizen': 'Blue', 
               'Leistung Warmwasser' : 'Green', 
               'Leistung Abtauen' : 'Red',
-              'Leistungsaufnahme' : 'Gray'}
+              'Leistungsaufnahme' : 'Black'}
     
     df['Leistung Heizen'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='Heizen',0)
     df['Leistung Warmwasser'] = df['Heizleistung Ist'].where(df['Betriebszustand']=='WW',0)
