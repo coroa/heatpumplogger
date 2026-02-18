@@ -6,10 +6,12 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "websockets>=14.1",
-    "dash",
+    "dash<3",  # dash-extensions is not compatible with dash>=3.0 yet
     "dash-bootstrap-components>=1.6.0",
     "pandas>=2.2.3",
     "jq>=1.9.1",
+    "plotly-resampler>=0.11.0",
+    "dash-extensions>=1.0.20",
 ]
 
 [dependency-groups]
