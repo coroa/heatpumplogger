@@ -5,6 +5,7 @@ import requests
 import json
     
 from csv import DictWriter
+from subprocess import check_call
 
 import jq
 import pandas as pd
@@ -147,6 +148,11 @@ def update_loop(ip, port, debug=False):
 
             data = update(ws, id_map)
             print(f"update of data in {time.time() - now:2.2f}s")
+
+            if date_str != old_date_str:
+                # we need to compress the old file and start the new file
+                check_call(["gzip", f"data/log_{old_date_str}.csv"])
+            
             filename = f"data/log_{date_str}.csv"
             with open(filename, mode="a") as f:
                 writer = DictWriter(f, fieldnames)

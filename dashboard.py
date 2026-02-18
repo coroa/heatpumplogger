@@ -7,6 +7,7 @@ Created on Fri Nov 22 09:02:57 2024
 """
 import os
 import time
+import re
 import pandas as pd
 import numpy as np
 from dash import Dash, dcc, html, Input, Output, callback
@@ -273,6 +274,8 @@ def update_content(day_dropdown):
             datapath,
             'log_' + day_dropdown + '.csv'
     )
+    if not os.path.exists(filepath):
+        filepath += ".gz"
     print(filepath)
     tt = time.time()
     df = pd.read_csv(
@@ -399,7 +402,8 @@ def graphs():
     return html.Div(id="graph_content")
 
 def sidebar_content():
-    days = [f.name[4:-4] for f in os.scandir(datapath)]
+    day_regex = re.compile(r"log_(.*).csv(?:.gz)?")
+    days = [m.group(1) for f in os.scandir(datapath) if (m := day_regex.match(f.name))]
     days = sorted(days)
     content = html.Div(  # smaller now moved up beside the first block
         children = [
