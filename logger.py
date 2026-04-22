@@ -149,7 +149,7 @@ def update_loop(ip, port, debug=False):
             data = update(ws, id_map)
             print(f"update of data in {time.time() - now:2.2f}s")
 
-            if date_str != old_date_str:
+            if date_str != old_date_str and (old_date_str != "startup"):
                 # we need to compress the old file and start the new file
                 check_call(["gzip", f"data/log_{old_date_str}.csv"])
             
